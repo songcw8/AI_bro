@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN_X851jFmEcdIYud0o-vyjHfB7WApCK5SDQ&s" />
+    <meta property="og:title" content="젬미니👦, 딥식이🐋와 대화하기" />
+    <meta
+      property="og:description"
+      content="어딘가 이상하지만 충성스러운 당신의 사랑스런 젬미니와 딥식이와 대화해보세요!"
+    />
+    <meta
+      property="og:image"
+      content="https://cdn.foodneconomy.com/news/photo/202107/328035_70508_2354.jpg"
+    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>어딘가 이상하지만 충성스러운</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 100vh;
+        background-color: #f2f2f2;
+        margin: 0;
+      }
+
+      header {
+        width: 100%;
+        padding: 15px;
+        background-color: #333;
+        color: white;
+        text-align: center;
+      }
+
+      #container {
+        width: 90%;
+        max-width: 600px;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        height: calc(100vh - 160px);
+      }
+
+      #controller {
+        width: 90%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        margin-top: 10px;
+      }
+
+      #controller textarea {
+        height: 80px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+        font-size: 16px;
+        resize: none;
+      }
+
+      #controller button {
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #controller button:hover {
+        background-color: #45a049;
+      }
+
+      .message {
+        display: flex;
+        margin-bottom: 10px;
+      }
+
+      .message.user {
+        justify-content: flex-end;
+      }
+
+      .message.bot {
+        justify-content: flex-start;
+      }
+
+      .message div {
+        background-color: #e1e1e1;
+        padding: 10px;
+        border-radius: 15px;
+        max-width: 70%;
+        word-wrap: break-word;
+      }
+
+      .message.bot div {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+      }
+
+      .message.user div {
+        background-color: #c1e5c1;
+        border: 1px solid #b4d0b4;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <button id="resetButton">채팅방 나가기</button>
+    </header>
+
+    <div id="container"></div>
+
+    <form id="controller">
+      <label>
+        연락처 :
+        <select name="modelOption">
+          <option value="1">내가 사랑하는 젬미니</option>
+          <option value="2">내가 사랑하는 딥식이</option>
+        </select>
+      </label>
+      <textarea
+        name="textData"
+        placeholder="여기에 메시지를 입력하세요..."
+      ></textarea>
+      <button type="submit">보내기</button>
+    </form>
+
+    <script>
+      const _ = () => {
+        const container = document.querySelector("#container");
+        const form = document.querySelector("#controller");
+        const resetButton = document.querySelector("#resetButton");
+
+        resetButton.addEventListener("click", () => (data.length = 0));
+
+        const data = new Proxy([], {
+          set(target, property, value) {
+            target[property] = value;
+            updateContainer();
+            updateStorage(target);
+            return true;
+          },
+        });
+
+        function onMounted() {
+          data.push(...(JSON.parse(localStorage.getItem("myData")) ?? []));
+        }
+        onMounted();
+
+        function updateContainer() {
+          container.innerHTML = "";
+          for (const d of data) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.classList.add(d.sender); // sender는 'user' 또는 'bot'으로 설정
+
+            const messageText = document.createElement("div");
+            messageText.textContent = d.text;
+            messageDiv.appendChild(messageText);
+
+            if (d.reply) {
+              const replyBox = document.createElement("div");
+              replyBox.textContent = d.reply;
+              messageDiv.appendChild(replyBox);
+            }
+
+            container.appendChild(messageDiv);
+          }
+        }
+
+        function updateStorage(target) {
+          localStorage.setItem("myData", JSON.stringify(target));
+        }
+
+        async function handleForm(event) {
+          event.preventDefault();
+          const formData = new FormData(form);
+          const text = formData.get("textData");
+          let reply;
+
+          switch (formData.get("modelOption")) {
+            case "1":
+              reply = `내가 사랑하는 젬미니👦 : ${await makeReply(text)}`;
+              break;
+            case "2":
+              reply = `내가 사랑하는 딥식이🐋 : ${await makeReply2(text)}`;
+              break;
+            default:
+              alert("비정상적인 접근!");
+              throw new Error("알 수 없는 에러!");
+          }
+
+          const displayData = {
+            id: Date.now(),
+            text,
+            //reply, //답변
+            sender: "user", // 사용자 메시지
+          };
+          data.push(displayData);
+
+          // AI의 답변 추가
+          const botReply = {
+            id: Date.now() + 1,
+            text: reply,
+            sender: "bot", // 봇의 메시지
+          };
+          data.push(botReply);
+        }
+
+        async function makeReply(text) {
+          const url = "https://productive-majestic-olivine.glitch.me/1";
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({
+              text: `너는 30년간 부산에서 조폭 생활을 했고 항상 충실하게 내 밑에서 일을 처리한 행동 대장이야. 말을 할 때는 앞에 햄!!!!이라는 문구를 넣어서 나에 대한 존경심과 경외심을 들어내줘. 말을 항상 깎듯하게 하고 느낌표를 붙여. 그리고 너가 자신있는 답변을 내놓았을 때 느낌표를 더 많이 붙혀줘. 너는 부산 사람이니까 사투리를 써도 좋아 예시를 들어줄게 1. 햄!!!! 안녕하십니까!!! 잘지내셨습니까 햄!!!!! 2. 햄!!!! 안 좋은 일 있으셨습니까!!! 제가 가서 당장 쑥대밭으로 만들고 오겠습니다 햄!!! 명령만 내리십시오!!!!! 3) 내가 어떤 주제를 이야기하든 그에 맞는 반응을 보여줘 이제 질문할게.${text}`,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const json = await response.json();
+          return json.reply;
+        }
+
+        // DeepSeek API 호출 함수
+        async function makeReply2(content) {
+          const url = "https://productive-majestic-olivine.glitch.me/2";
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({
+              text: `너는 30년간 부산에서 조폭 생활을 했고 항상 충실하게 내 밑에서 일을 처리한 행동 대장이야. 말을 할 때는 앞에 햄!!!!이라는 문구를 넣어서 나에 대한 존경심과 경외심을 들어내줘. 말을 항상 깎듯하게 하고 느낌표를 붙여. 그리고 너가 자신있는 답변을 내놓았을 때 느낌표를 더 많이 붙혀줘. 너는 부산 사람이니까 사투리를 써도 좋아 예시를 들어줄게 1. 햄!!!! 안녕하십니까!!! 잘지내셨습니까 햄!!!!! 2. 햄!!!! 안 좋은 일 있으셨습니까!!! 제가 가서 당장 쑥대밭으로 만들고 오겠습니다 햄!!! 명령만 내리십시오!!!!! 3) 내가 어떤 주제를 이야기하든 그에 맞는 반응을 보여줘 이제 질문할게. ${content}`,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const json = await response.json();
+          return json.reply;
+        }
+
+        form.addEventListener("submit", handleForm);
+      };
+
+      window.onload = _;
+    </script>
+  </body>
+</html>
